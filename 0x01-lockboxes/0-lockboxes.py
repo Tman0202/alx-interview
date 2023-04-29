@@ -1,38 +1,39 @@
 #!/usr/bin/python3
-""" LockBoxes Interview Challenge """
+""" Lockboxes """
 
 
 def canUnlockAll(boxes):
-    """
-    determines if all the boxes can be opened or not
-    Returns:
-        True: all boxes can be opened
-        False: not all boxes can be opened
-    """
-    box_len = len(boxes)  # get total number of boxes
-    keys = boxes[0][:]  # initialised list to store availabe keys
-    box_list = {}  # dictionary to keep track of each box's unlock status
-    count = 0  # unlock cycle counter
-    pending = 0  # tracker for unopened boxes
+    """ can unlock boxes """
+    # return true if the box has only one portion at index 0
+    if len(boxes) == 1:
+        return True
 
-    while (count < (box_len - pending)):
-        x = 1  # initialise the box index for the next cycle
-        while (x < box_len):
-            if x in keys:
-                box_list[f'{x}'] = True  # set box status
-                for key in boxes[x]:
-                    if key not in keys:  # if same key was not added earlier
-                        keys.append(key)
-            else:
-                box_list[f'{x}'] = False  # set box status
-                pending += 1
-            x += 1  # increment the index
-        count += 1  # increment the unlock cycle counter
-        if pending == 0:  # if all boxes get unlocked after first cycle
-            break
+    # initialize an empty set to store the keys
+    keyset = set()
 
-# Checking the box status after running all unlock attempts
-    for status in box_list.values():
-        if status is False:
-            return False  # One ore more boxes can not be opened
-    return True  # All the boxes can be opened
+    # add keys found in the index 0 the unlocked box to keyset
+    for i in boxes[0]:
+        if i < len(boxes):
+            keyset.add(i)
+
+    lenght = 0
+    # checks if the amount of k in the boxes is less than the amount of boxes
+    while lenght < len(keyset):
+        # set length as lenght of keyset
+        lenght = len(keyset)
+        # loop over the copy of the set
+        for i in keyset.copy():
+            # add keys to keyset that have mathicing boxes
+            if i < len(boxes):
+                for j in boxes[i]:
+                    if j < len(boxes):
+                        keyset.add(j)
+
+    # remove 0 if in the set since index 0 is always unlocked
+    if 0 in keyset:
+        keyset.remove(0)
+
+    if len(keyset) + 1 == len(boxes):
+        return True
+
+    return False
