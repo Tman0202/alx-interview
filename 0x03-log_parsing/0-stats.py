@@ -1,42 +1,81 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+'''A script that reads stdin line by line and computes metrics'''
 
-'''A script that reads stdin line by line and computes metris'''
 
 import sys
 
-total_file_size = 0
-status_code_counts = {}
+cache = {'200': 0, '301': 0, '400': 0, '401': 0,
+         '403': 0, '404': 0, '405': 0, '500': 0}
+total_size = 0
+counter = 0
 
 try:
-    for i, line in enumerate(sys.stdin, 1):
-        # Parse the input line based on the specified format
-        parts = line.split()
-        if len(parts) >= 7:
-            ip_address = parts[0]
-            status_code = parts[-2]
-            file_size = int(parts[-1])
+    for line in sys.stdin:
+        line_list = line.split(" ")
+        if len(line_list) > 4:
+            code = line_list[-2]
+            size = int(line_list[-1])
+            if code in cache.keys():
+                cache[code] += 1
+            total_size += size
+            counter += 1
 
-            # Update the total file size
-            total_file_size += file_size
+        if counter == 10:
+            counter = 0
+            print('File size: {}'.format(total_size))
+            for key, value in sorted(cache.items()):
+                if value != 0:
+                    print('{}: {}'.format(key, value))
 
-            # Update the status code counts
-            if status_code.isdigit():
-                status_code = int(status_code)
-                status_code_counts[status_code] = status_code_counts.get(status_code, 0) + 1
-
-        # Print statistics after every 10 lines
-        if i % 10 == 0:
-            print(f"File size: {total_file_size}")
-            for code in sorted(status_code_counts):
-                count = status_code_counts[code]
-                print(f"{code}: {count}")
-
-except KeyboardInterrupt:
+except Exception as err:
     pass
 
-# Print final statistics
-print(f"File size: {total_file_size}")
-for code in sorted(status_code_counts):
-    count = status_code_counts[code]
-    print(f"{code}: {count}")
+finally:
+    print('File size: {}'.format(total_size))
+    for key, value in sorted(cache.items()):
+        if value != 0:
+            print('{}: {}'.format(key, value))
 
+
+'''#!/usr/bin/python3
+""" A script for log parsing from stdin"""
+
+
+import sys
+
+
+def status_writer():
+    """ Extracts the data fields from the stream
+        and prints the status log
+    """
+    line_count = 0
+    total_size = 0
+    status_code = ['200', '301', '400', '401', '403', '404', '405', '500']
+    status_count = dict([(code, 0) for code in status_code])
+
+    try:
+        for line in sys.stdin:
+            capture = re.findall(match, line)
+            try:
+                total_size += int(capture[0][1])
+                status_count[capture[0][0]] += 1
+            except IndexError:
+                continue
+            line_count += 1
+
+            if line_count == 10:
+                line_count = 0
+                print(f"File size: {total_size}")
+                for status_code, number in status_count.items():
+                    if number != 0:
+                        print(f"{status_code}: {number}")
+
+    except KeyboardInterrupt:
+        print(f"File size: {total_size}")
+        for status_code, number in status_count.items():
+            if number != 0:
+                print(f"{status_code}: {number}")
+
+if __name__ == '__main__':
+    status_writer()
+'''
